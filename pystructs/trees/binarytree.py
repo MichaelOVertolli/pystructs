@@ -2,6 +2,7 @@ from collections import deque
 from math import log
 from warnings import warn
 
+
 class BinTree(object):
 
     PARENT = 0
@@ -12,24 +13,29 @@ class BinTree(object):
         """Returns middle index between [bot, top)."""
         if type(bot) is not int or type(top) is not int:
             raise TypeError('Invalid input. Both values must be int.')
-        if top-bot < 0:
-            raise ValueError('Invalid input combination. bot and top are incorrectly ordered.')
+        if top - bot < 0:
+            raise ValueError(
+                "Invalid input combination. bot and top are incorrectly" +
+                "ordered.")
         elif top == bot:
             raise EqualityException('Invalid input. The two values are equal.')
-        elif top-bot == 1:
-            raise NoMiddleException('Invalid input. There is no middle value between ' + str(bot) + ' and ' + str(top))
-        return (bot+top)/2
+        elif top - bot == 1:
+            raise NoMiddleException(
+                'Invalid input. There is no middle value between ' + str(
+                    bot) + ' and ' + str(top))
+        return (bot + top) / 2
 
     def setmiddleindex(self, lower, upper, assign, stack):
-        #not used right now.
+        # not used right now.
         try:
-            #I do not like this call
+            # I do not like this call
             mid = self.getmiddleindex(lower, upper)
         except NoMiddleException:
             mid = assign
         except EqualityException:
-            #This should never happen.
-            warn('Unexpected equality in left segment for values: '+str((lower, mid, upper)))
+            # This should never happen.
+            warn('Unexpected equality in left segment for values: ' + str((
+                lower, mid, upper)))
             mid = None
         else:
             stack.append((lower, mid, upper))
@@ -41,8 +47,9 @@ class BinTree(object):
         """
         len_ = len(iterable)
         if len(set(iterable)) < len_:
-            raise DuplicateException('Bintree assumes you are handling duplicates separately.')
-        #add duck type check to see that eq, lt, gt are implemented.
+            raise DuplicateException(
+                'Bintree assumes you are handling duplicates separately.')
+        # add duck type check to see that eq, lt, gt are implemented.
         if len_ == 0:
             bintree = None
         elif len_ == 1:
@@ -51,9 +58,9 @@ class BinTree(object):
             if not sorted_:
                 iterable = sorted(iterable)
             bintree = {key: [None, None, None] for key in iterable}
-            #Assuming the tree is balanced, then the maximum breadth is
-            #the level (or log of size) that is not partial and the size
-            #of that level is 2**level
+            # Assuming the tree is balanced, then the maximum breadth is
+            # the level (or log of size) that is not partial and the size
+            # of that level is 2**level
             stack = deque(maxlen=2**int(log(len_, 2)))
             getmiddleindex = self.getmiddleindex
             root = getmiddleindex(0, len_)
@@ -64,29 +71,30 @@ class BinTree(object):
             RIGHT = BinTree.RIGHT
             while len(stack) > 0:
                 bot, mid, top = stack.pop()
-                #Two checks to see if the child nodes are leaves
+                # Two checks to see if the child nodes are leaves
                 try:
                     l_mid = getmiddleindex(bot, mid)
                 except NoMiddleException:
                     l_mid = bot
                 except EqualityException:
-                    #This should never happen.
-                    warn('Unexpected equality in left segment for values: '+str((bot, mid, top)))
+                    # This should never happen.
+                    warn('Unexpected equality in left segment for values: ' +
+                         str((bot, mid, top)))
                     l_mid = None
                 else:
                     stack.append((bot, l_mid, mid))
                 try:
-                    r_mid = getmiddleindex(mid+1, top)
+                    r_mid = getmiddleindex(mid + 1, top)
                 except NoMiddleException:
-                    r_mid = top-1
+                    r_mid = top - 1
                 except EqualityException:
                     r_mid = None
                 else:
-                    stack.append((mid+1, r_mid, top))
-                #sets leaves in tree
+                    stack.append((mid + 1, r_mid, top))
+                # sets leaves in tree
                 bintree[iterable[mid]][LEFT] = l_mid
                 bintree[iterable[mid]][RIGHT] = r_mid
-                #sets parents in tree
+                # sets parents in tree
                 try:
                     l_val = iterable[l_mid]
                 except TypeError:
@@ -114,11 +122,14 @@ class BinTree(object):
     def get_last(self):
         return self.get_loop(self.RIGHT)
 
+
 class DuplicateException(Exception):
     pass
 
+
 class NoMiddleException(Exception):
     pass
+
 
 class EqualityException(Exception):
     pass

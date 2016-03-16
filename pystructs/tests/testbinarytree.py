@@ -1,8 +1,11 @@
 import unittest
-from pystructs.trees.binarytree import BinTree, NoMiddleException, EqualityException
 from random import shuffle
 
-#python -m unittest discover \\\from Data_structures
+from pystructs.trees.binarytree import (BinTree, EqualityException,
+                                        NoMiddleException)
+
+
+# python -m unittest discover \\\from Data_structures
 
 class GetMiddleIndexTest(unittest.TestCase):
 
@@ -48,16 +51,16 @@ class BinTreeTest(unittest.TestCase):
 
     def test_one_init(self):
         t = BinTree([0])
-        self.assertDictEqual(t.tree, 
+        self.assertDictEqual(t.tree,
                              {'root': 0,
                               0: [None, None, None]})
 
     def test_balanced_init(self):
         t = BinTree(self.iterable[0:3], True)
-        self.assertDictEqual(t.tree, 
-                             {'root': 1, 
-                              1: [None, 0, 2], 
-                              0: [1, None, None], 
+        self.assertDictEqual(t.tree,
+                             {'root': 1,
+                              1: [None, 0, 2],
+                              0: [1, None, None],
                               2: [1, None, None]})
 
     def test_unbalanced_init(self):
