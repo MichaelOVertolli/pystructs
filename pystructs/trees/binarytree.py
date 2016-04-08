@@ -1,6 +1,7 @@
+import warnings
 from collections import deque
 from math import log
-from warnings import warn
+from random import random
 
 
 class BinTree(object):
@@ -34,8 +35,8 @@ class BinTree(object):
             mid = assign
         except EqualityException:
             # This should never happen.
-            warn('Unexpected equality in left segment for values: ' + str((
-                lower, mid, upper)))
+            warnings.warn('Unexpected equality in left segment for values: ' +
+                          str((lower, mid, upper)))
             mid = None
         else:
             stack.append((lower, mid, upper))
@@ -49,15 +50,19 @@ class BinTree(object):
         if len(set(iterable)) < len_:
             raise DuplicateException(
                 'Bintree assumes you are handling duplicates separately.')
-        # add duck type check to see that eq, lt, gt are implemented.
         if len_ == 0:
-            bintree = None
+            bintree = {'root': None}
         elif len_ == 1:
             bintree = {iterable[0]: [None, None, None], 'root': iterable[0]}
         else:
             if not sorted_:
                 iterable = sorted(iterable)
-            bintree = {key: [None, None, None] for key in iterable}
+            try:
+                bintree = {key: [None, None, None] for key in iterable}
+            except TypeError as e:
+                raise TypeError('All values in a BinTree must be hashable.' +
+                                ' At least one value is not hashable. ' +
+                                str(e))
             # Assuming the tree is balanced, then the maximum breadth is
             # the level (or log of size) that is not partial and the size
             # of that level is 2**level
@@ -78,8 +83,8 @@ class BinTree(object):
                     l_mid = bot
                 except EqualityException:
                     # This should never happen.
-                    warn('Unexpected equality in left segment for values: ' +
-                         str((bot, mid, top)))
+                    warnings.warn('Unexpected equality in left segment for' +
+                                  'values: ' + str((bot, mid, top)))
                     l_mid = None
                 else:
                     stack.append((bot, l_mid, mid))
@@ -109,25 +114,127 @@ class BinTree(object):
                     bintree[r_val][PARENT] = mid
         self.tree = bintree
 
-    def get_loop(self, dir):
+    def get_loop(self, dir_, start):
         t = self.tree
-        node = t['root']
-        while t[node][dir] is not None:
-            node = t[node][dir]
+        if start == 'root':
+            node = t[start]
+        else:
+            node = start
+        while t[node][dir_] is not None:
+            node = t[node][dir_]
         return node
 
     def get_first(self):
-        return self.get_loop(self.LEFT)
+        return self.get_loop(self.LEFT, 'root')
 
     def get_last(self):
-        return self.get_loop(self.RIGHT)
+        return self.get_loop(self.RIGHT, 'root')
+
+    def get_root(self):
+        return self.tree['root']
+
+    def find(self, val):
+        try:
+            node = self.tree[val]
+        except KeyError:
+            node = None
+        return node
+
+    def insert(self, val):
+        t = self.tree
+        try:
+            t[val]
+        except KeyError:
+            t[val] = [None, None, None]
+        else:
+            raise DuplicateException(
+                'Invalid input to insert. Bintree assumes you' +
+                'are handling duplicates separately.')
+        PARENT = BinTree.PARENT
+        LEFT = BinTree.LEFT
+        RIGHT = BinTree.RIGHT
+        dir_ = None
+        parent = 'root'
+        node = t['root']
+        while node is not None:
+            if val < node:
+                dir_ = LEFT
+            else:
+                dir_ = RIGHT
+            parent = node
+            node = t[node][dir_]
+        if dir_ is None:
+            t[parent] = val
+        else:
+            t[parent][dir_] = val
+            t[val][PARENT] = parent
+
+    def delete(self, val, rand=random):
+        """Deletes val from the binary tree.
+
+        Raises a warning if the value doesn't exist.
+
+        val := (any type) the value to delete
+        rand := (func) special testing function to specify random
+                       aspects of the function.
+
+        """
+
+        t = self.tree
+        try:
+            node = t[val]
+        except KeyError:
+            warnings.warn('No value deleted. ' + str(val) + ' not in tree.')
+        else:
+            PARENT = BinTree.PARENT
+            LEFT = BinTree.LEFT
+            RIGHT = BinTree.RIGHT
+            parent = node[PARENT]
+            parentnode = t[parent]
+            if parentnode[LEFT] == val:
+                loc = LEFT
+            else:
+                loc = RIGHT
+            if node[LEFT] is None:
+                if node[RIGHT] is None:
+                    new_node = None
+                else:
+                    new_node = node[RIGHT]
+            else:
+                if node[RIGHT] is None:
+                    new_node = node[LEFT]
+                else:
+                    # prevents degeneration caused by regularly picking
+                    # the same side
+                    if rand() > 0.5:
+                        # (direction, start_node)
+                        dir_ = (LEFT, node[RIGHT])
+                    else:
+                        dir_ = (RIGHT, node[LEFT])
+                    new_node = self.get_loop(*dir_)
+                    self.delete(new_node)
+                    t[new_node] = node
+                    # only happens if both nodes exist
+                    # don't need to check
+                    t[node[LEFT]][PARENT] = new_node
+                    t[node[RIGHT]][PARENT] = new_node
+            parentnode[loc] = new_node
+            try:
+                temp = t[new_node]
+            except KeyError:
+                pass
+            else:
+                temp[PARENT] = parent
+            del t[val]
 
 
 class DuplicateException(Exception):
+    """Occurs if there are any duplicates in the iterable."""
     pass
 
 
 class NoMiddleException(Exception):
+    """
     pass
 
 
