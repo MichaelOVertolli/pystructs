@@ -116,6 +116,10 @@ class BinTreeTest(unittest.TestCase):
         t = BinTree(self.iterable, True)
         self.assertEqual(t.get_loop(BinTree.LEFT, 10), 7)
 
+    def test_get_loop_ValueError(self):
+        t = BinTree(self.iterable, True)
+        self.assertRaises(ValueError, t.get_loop, BinTree.LEFT, 50)
+
     def test_get_first(self):
         t = BinTree(self.iterable, True)
         self.assertEqual(t.get_first(), 0)

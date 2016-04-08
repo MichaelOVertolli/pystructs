@@ -5,13 +5,35 @@ from random import random
 
 
 class BinTree(object):
+    """Binary tree class for hashable, number-like types.
+
+    Public Functions:
+    __init__(iterable, sorted) := makes a balanced BinTree
+    get_root() := returns root value
+    get_first(val) := returns left-most leaf value (minimum)
+    get_last(val) := returns right-most leaf value (maximum)
+    find(val) := returns [parent, left-child, right-child] list
+    delete(val) := deletes a value in tree
+    insert(val) := inserts a value in tree
+
+    Public Static Class Properties:
+    PARENT := parent index in node list
+    LEFT := left-child index in node list
+    RIGHT := right-child index in node list
+
+    """
 
     PARENT = 0
     LEFT = 1
     RIGHT = 2
 
     def getmiddleindex(self, bot, top):
-        """Returns middle index between [bot, top)."""
+        """Returns middle index between [bot, top).
+
+        bot := (any number like type) the bottom index
+        top := (any number like type) the top index
+
+        """
         if type(bot) is not int or type(top) is not int:
             raise TypeError('Invalid input. Both values must be int.')
         if top - bot < 0:
@@ -26,24 +48,12 @@ class BinTree(object):
                     bot) + ' and ' + str(top))
         return (bot + top) / 2
 
-    def setmiddleindex(self, lower, upper, assign, stack):
-        # not used right now.
-        try:
-            # I do not like this call
-            mid = self.getmiddleindex(lower, upper)
-        except NoMiddleException:
-            mid = assign
-        except EqualityException:
-            # This should never happen.
-            warnings.warn('Unexpected equality in left segment for values: ' +
-                          str((lower, mid, upper)))
-            mid = None
-        else:
-            stack.append((lower, mid, upper))
-        return mid
-
     def __init__(self, iterable, sorted_=False):
         """Makes a balanced binary tree from an iterable with no duplicates.
+
+        iterable := (any sortable with hashable, number-like values) starting
+                    tree
+        sorted := (bool) whether iterable is already sorted
 
         """
         len_ = len(iterable)
@@ -115,25 +125,45 @@ class BinTree(object):
         self.tree = bintree
 
     def get_loop(self, dir_, start):
+        """Finds the leaf along continuous direction from start.
+
+        Raises a ValueError if start is not in the tree.
+
+        dir_ := (int) should use BinTree.LEFT or BinTree.RIGHT
+        start := (any type) start node for the path to begin
+
+        """
         t = self.tree
         if start == 'root':
             node = t[start]
         else:
             node = start
+            try:
+                t[start]
+            except KeyError:
+                raise ValueError(str(start) + ' is not in the tree.')
         while t[node][dir_] is not None:
             node = t[node][dir_]
         return node
 
     def get_first(self):
+        """Returns the left-most leaf value (minimum)."""
         return self.get_loop(self.LEFT, 'root')
 
     def get_last(self):
+        """Returns the right-most leaf value (maximum)."""
         return self.get_loop(self.RIGHT, 'root')
 
     def get_root(self):
+        """Returns the root of binary tree."""
         return self.tree['root']
 
     def find(self, val):
+        """Finds and returns the parent and children of value.
+
+        val := (any type) the value to find
+
+        """
         try:
             node = self.tree[val]
         except KeyError:
@@ -141,6 +171,18 @@ class BinTree(object):
         return node
 
     def insert(self, val):
+        """Inserts a value into the binary tree.
+
+        Raises DuplicateException if the value already exists.
+
+        val := (any hashable type) the value to insert
+
+        """
+        if not hasattr(val, "__hash__"):
+            raise TypeError('Invalid input to insert. Bintree ' +
+                            'requires that all values are ' +
+                            'hashable.')
+
         t = self.tree
         try:
             t[val]
@@ -170,7 +212,7 @@ class BinTree(object):
             t[val][PARENT] = parent
 
     def delete(self, val, rand=random):
-        """Deletes val from the binary tree.
+        """Deletes value from the binary tree.
 
         Raises a warning if the value doesn't exist.
 
@@ -234,9 +276,10 @@ class DuplicateException(Exception):
 
 
 class NoMiddleException(Exception):
-    """
+    """Occurs if no middle between values due to adjacency."""
     pass
 
 
 class EqualityException(Exception):
+    """Occurs if no middle between values due to equality."""
     pass
