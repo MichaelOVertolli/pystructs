@@ -240,6 +240,28 @@ class BinTreeTest(unittest.TestCase):
                               12: [9, 11, None],
                               11: [12, None, None]})
 
+    def test_delete_both_childs_root(self):
+        t = BinTree(self.iterable, True)
+        # forces random check to always pass
+
+        def dump():
+            return 0.7
+        t.delete(6, dump)
+        self.assertDictEqual(t.tree,
+                             {'root': 7,
+                              7: [None, 3, 10],
+                              3: [7, 1, 5],
+                              1: [3, 0, 2],
+                              0: [1, None, None],
+                              2: [1, None, None],
+                              5: [3, 4, None],
+                              4: [5, None, None],
+                              10: [7, 8, 12],
+                              8: [10, None, 9],
+                              9: [8, None, None],
+                              12: [10, 11, None],
+                              11: [12, None, None]})
+
     def test_insert_DuplicateException(self):
         t = BinTree(self.iterable, True)
         self.assertRaises(DuplicateException, t.insert, 3)

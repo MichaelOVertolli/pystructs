@@ -232,11 +232,15 @@ class BinTree(object):
             LEFT = BinTree.LEFT
             RIGHT = BinTree.RIGHT
             parent = node[PARENT]
-            parentnode = t[parent]
-            if parentnode[LEFT] == val:
-                loc = LEFT
+            try:
+                parentnode = t[parent]
+            except KeyError:
+                pass
             else:
-                loc = RIGHT
+                if parentnode[LEFT] == val:
+                    loc = LEFT
+                else:
+                    loc = RIGHT
             if node[LEFT] is None:
                 if node[RIGHT] is None:
                     new_node = None
@@ -260,13 +264,17 @@ class BinTree(object):
                     # don't need to check
                     t[node[LEFT]][PARENT] = new_node
                     t[node[RIGHT]][PARENT] = new_node
-            parentnode[loc] = new_node
             try:
-                temp = t[new_node]
-            except KeyError:
-                pass
+                parentnode[loc] = new_node
+            except NameError:
+                t['root'] = new_node
             else:
-                temp[PARENT] = parent
+                try:
+                    temp = t[new_node]
+                except KeyError:
+                    pass
+                else:
+                    temp[PARENT] = parent
             del t[val]
 
 
